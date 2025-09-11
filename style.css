@@ -76,6 +76,7 @@ body{
     grid-template-columns: repeat(10,43px);
     grid-template-rows: repeat(3,60px);
     grid-gap: 14px 4px;
+    user-select: none;
 }
 .Key{
     color: white;
