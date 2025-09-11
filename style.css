@@ -69,4 +69,55 @@ body{
     height: 100%;
     width: 100%;
     margin: 0;
+    gap: 7vh;
+}
+
+.Keyboard{
+    display: grid;
+    grid-template-columns: repeat(10,43px);
+    grid-template-rows: repeat(3,60px);
+    grid-gap: 14px 4px;
+}
+.Key{
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #636363;
+    border-radius: 6px;
+    width: 100%;
+    height: 100%;
+    font-size:22px;
+    font-family: 'Outfit';
+    font-weight: 700;
+    user-select: none;
+    cursor: pointer;
+    border-bottom: 2px solid #4d4d4d;
+
+    &:hover{
+        background-color: #5a5a5a;
+    }
+}
+
+.KeyGray{
+    background-color: #2c2c2c;
+    border-color:#212121;
+    color: #969696;
+    &:hover{
+        background-color: #2c2c2c;
+    }
+}
+.KeyOrange{
+    background-color: #cd8729;
+    border-color:#9f6414;
+    &:hover{
+        background-color: #cd8729;
+    }
+}
+.KeyGreen{
+    background-color: #3eaa42;
+    border-color:#157d19;
+    &:hover{
+        background-color: #3eaa42;
+    }
 }
