@@ -36,7 +36,6 @@
     justify-content: center;
     align-items: center;
     gap: 8px;
-    
 }
 
 .text{
@@ -93,11 +92,31 @@ body{
     user-select: none;
     cursor: pointer;
     border-bottom: 2px solid #4d4d4d;
+    transition: background-color,color 500ms ease-in-out;
 
     &:hover{
         background-color: #5a5a5a;
     }
 }
+@media (width<=500px) {
+    .Key{
+        font-size:4.4vw;
+    }
+    .Keyboard{
+        grid-template-columns: repeat(10,8.3vw);
+        grid-gap: 2.8vw 0.8vw;
+    }
+}
+
+@media (width<=380px) {
+    .tile{
+        width: 14.737vw;
+    }
+    .Grid,.line{
+        gap: 2.105vw;
+    }
+}
+
 
 .KeyGray{
     background-color: #2c2c2c;
@@ -121,3 +140,5 @@ body{
         background-color: #3eaa42;
     }
 }
+
+
