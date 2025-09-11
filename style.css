@@ -1,0 +1,72 @@
+.tile{
+    width: 56px;
+    height: auto;
+    aspect-ratio: 1/1;
+    background-color: transparent;
+    border: solid 3px #2f2f2f;
+    border-radius: 6px;
+}
+
+.game-tile{
+    animation: flip 500ms 0ms ease-in-out;
+    animation-fill-mode: forwards;
+}
+
+@keyframes flip {
+    50%{
+        transform: rotateX(90deg);
+    }
+    100%{
+        transform: rotateX(180deg);
+    }
+}
+
+.line{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    perspective: 800px;
+}
+
+.Grid{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    
+}
+
+.text{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    color: white;
+    font-size:32px;
+    font-family: 'Outfit';
+    font-weight: 700;
+}
+
+.currenttile{
+    border-color: #73adff;
+}
+
+html{
+    height: 100%;
+    width: 100%;
+}
+body{
+    background-color: #0e0e0f;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+}
