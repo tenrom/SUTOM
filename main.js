@@ -26,7 +26,19 @@ function getWord(){
 
 
 FixSeed(new Date().toDateString())
+
+if (localStorage.getItem('data')){
+    if (JSON.parse(localStorage.getItem('data'))['Day']===new Date().toDateString()){
+        for (let i=0;i<Number(JSON.parse(localStorage.getItem('data'))['Num']);i++){
+            rng()
+        }
+    }
+    
+}
+
 getWord()
+
+
 
 
 
@@ -287,6 +299,27 @@ function TryWord(){
                 try{tiles[index].querySelector('.tile').classList.add('currenttile')}catch{}
             }else{
                 win=true
+                
+                if (localStorage.getItem('data')){
+                    let j=JSON.parse(localStorage.getItem('data'))
+                    if (j['Day']===new Date().toDateString()){
+                        let d={
+                            "Day":j['Day'],
+                            "Num":j['Num']+1
+                        }
+                        localStorage.setItem('data',JSON.stringify(d))
+                        return 0
+                    }else{
+                        localStorage.removeItem('data')
+                    }
+                }
+
+                let d={
+                    "Day":new Date().toDateString(),
+                    "Num":1
+                }
+                localStorage.setItem('data',JSON.stringify(d))
+                
             }
         }else{
             if (index>0){
