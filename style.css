@@ -30,6 +30,20 @@
     perspective: 800px;
 }
 
+@keyframes invalid {
+    25%{
+        transform: translateX(-8px); 
+    }
+    50%{
+        transform: translateX(8px); 
+    }
+    75%{
+        transform: translateX(-8px); 
+    }
+}
+
+
+
 .Grid{
     display: flex;
     flex-direction: column;

@@ -97,6 +97,14 @@ class Line extends HTMLElement{
     constructor (){
         super()
     }
+    Anim(){
+        this.style.animation='none'
+        this.querySelector('.text').style.transform='translateX(0deg)'
+
+        setTimeout(()=>{
+            this.style.animation=` invalid 400ms cubic-bezier(.61,1.01,.39,-0.01)`
+        },50)
+    }
     connectedCallback(){
         this.innerHTML=`
             <div id='line'>${'<game-tile></game-tile>'.repeat(this.getAttribute('tilenb'))}</div>
@@ -279,6 +287,10 @@ function TryWord(){
                 try{tiles[index].querySelector('.tile').classList.add('currenttile')}catch{}
             }else{
                 win=true
+            }
+        }else{
+            if (index>0){
+                tiles[index-1].parentNode.parentNode.Anim()
             }
         }
     })
