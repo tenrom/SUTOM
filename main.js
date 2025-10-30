@@ -1,8 +1,26 @@
+const frenchWordTypes = [
+  "nom",
+  "nom propre",
+  "adjectif",
+  "adverbe",
+  "pronom",
+  "préposition",
+  "conjonction",
+  "interjection",
+  "numéral",
+  "déterminant"
+];
+
 let tiles=[]
 let index=0
 let word=''
 let win=false
 let rng=''
+let tilenb=2
+let attemps=6
+
+
+let drawWord
 
 let keys={}
 let a='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -14,12 +32,118 @@ function FixSeed(seed){
     rng=new Math.seedrandom(seed)
 }
 
-function getWord(){
-    fetch("drawable-words.json")
+function checkWord(after){
+    fetch(`https://fr.wiktionary.org/w/api.php?action=opensearch&search=${word.toLowerCase()}&format=json&origin=*&profile=classic`)
         .then((res) => res.json())
         .then((json) => {
             console.log(json)
-            word=json[Math.round(rng()*(json.length-1))]
+
+            fetch(`https://fr.wiktionary.org/w/api.php?action=query&titles=${json[1][0]}&prop=extracts&format=json&origin=*`)
+                .then((res) => res.json())
+                .then((json) => {
+                    console.log(json)
+
+                    let html=Object.values(json.query.pages)[0].extract
+
+                    // Create a temporary DOM element to parse the HTML
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+
+                    // Select all top-level elements inside the body
+                    const bodyChildren = Array.from(doc.body.children);
+
+                    // Initialize an array to hold the elements we want
+                    const elementsUntilSecondH2 = [];
+                    let h2Count = 0;
+
+                    for (const el of bodyChildren) {
+                    if (el.tagName.toLowerCase() === 'h2') {
+                        h2Count++;
+                        if (h2Count === 2) break; // Stop before the second h2
+                    }
+                    elementsUntilSecondH2.push(el.outerHTML);
+                    }
+
+                    // Join them back into a single HTML string
+                    html = elementsUntilSecondH2.join('\n');
+
+                    const parser2 = new DOMParser();
+                    const doc2 = parser2.parseFromString(html, "text/html");
+
+                    // Select all h3 elements
+                    const h3Elements = doc2.querySelectorAll('h3');
+
+                    // Extract their content
+                    const h3s = Array.from(h3Elements).map(el => el.outerHTML).join('')
+
+                    console.log(h3s); 
+
+                    if (!frenchWordTypes.some(type => h3s.toLowerCase().includes(type)) && h3s.toLowerCase().includes('forme de verbe')){
+                        console.warn('Est seulement une forme de verbe')
+                    }
+                    if (!html.includes('Français')){
+                        console.warn('Le mot n\'est pas français.')
+                    }
+                    if (Object.values(json.query.pages)[0].title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()!==word){
+                        console.warn('Le mot n\'est pas trouvé par Wiktionary.')
+                    }
+
+                    InDic(Object.values(json.query.pages)[0].title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase(),(indico)=>{
+                        if (
+                            Object.values(json.query.pages)[0].title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()!==word || 
+                            !frenchWordTypes.some(type => h3s.toLowerCase().includes(type)) && h3s.toLowerCase().includes('forme de verbe') || 
+                            !html.toLowerCase().includes('français') || 
+                            !indico
+                        ){
+                            if (localStorage.getItem('data')){
+                                let j=JSON.parse(localStorage.getItem('data'))
+                                if (j['Day']===new Date().toDateString()){
+                                    let d={
+                                        "Day":j['Day'],
+                                        "Num":j['Num']+1
+                                    }
+                                    localStorage.setItem('data',JSON.stringify(d))
+                                }
+                            }else{
+                                let d={
+                                    "Day":new Date().toDateString(),
+                                    "Num":1
+                                }
+                                localStorage.setItem('data',JSON.stringify(d))
+                            }
+
+                            let r=rng()
+                            let i=Math.round(r*(drawWord.length-1))
+                            word=drawWord[i][Math.round(r*(drawWord[i].length-1))]
+                            checkWord(after)
+                            return 0
+                        }else{
+                            console.info('Le mot est valide.')
+                        }
+
+                        document.getElementById('info').innerHTML='<h2 id="fr" style="font-size:24px;"> → '+Object.values(json.query.pages)[0].title+'</h2>'+html
+                        word=Object.values(json.query.pages)[0].title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()
+                        console.info('Words of length',word.length+'.')
+                        after()
+                    })
+                })      
+        })
+}
+
+function getWord(){
+    fetch("grouped_words_compact.json")
+        .then((res) => res.json())
+        .then((json) => {
+            drawWord=json
+            
+            let r=rng()
+            let i=Math.round(r*(drawWord.length-1))
+            word=drawWord[i][Math.round(r*(drawWord[i].length-1))]
+
+            checkWord(()=>{
+                tilenb=word.length
+                addGrid()
+            })
         })
         .catch((e) => console.error(e))
 }
@@ -131,7 +255,7 @@ class Game extends HTMLElement{
     }
     connectedCallback(){
         this.innerHTML=`
-            <div id='Grid'>${`<game-line tilenb='${this.getAttribute('tilenb')}'></game-line>`.repeat(this.getAttribute('attemps'))}</div>
+            <div id='Grid'>${`<game-line tilenb='${tilenb}'></game-line>`.repeat(attemps)}</div>
         `
         this.getElementsByTagName('div')[0].classList.add('Grid')
     }
@@ -187,7 +311,7 @@ class Key extends HTMLElement{
                 RemovingLetter()
             }else{
                 if (this.getAttribute('data-text')==='->' ){
-                    if (index===5 && !win){
+                    if (index===tilenb && !win){
                         TryWord()
                     }
                 }else{
@@ -198,10 +322,10 @@ class Key extends HTMLElement{
     }
 }
 function AddingLetter(l){
-    if (index!==5){
+    if (index!==tilenb){
         tiles[index].querySelector('.tile').classList.remove('currenttile')
         tiles[index].AddLetter(l)
-        if (index!==5){
+        if (index!==tilenb){
             tiles[index].querySelector('.tile').classList.add('currenttile')
         }
     }   
@@ -232,7 +356,7 @@ function ColoredKeyBoard(){
 function TryWord(){
     let nword=word
     let currentword=''
-    for (let i in tiles.slice(0,5)){
+    for (let i in tiles.slice(0,tilenb)){
         currentword+=tiles[i].text
     }
     console.log(currentword)
@@ -240,7 +364,7 @@ function TryWord(){
         if (valid){
             let lettersG={}
             let lettersO={}
-            for (let i in tiles.slice(0,5)){
+            for (let i in tiles.slice(0,tilenb)){
                 if (word[i]!==tiles[i].text && word.includes(tiles[i].text)){
                     if (lettersO[tiles[i].text]){
                         lettersO[tiles[i].text]+=1
@@ -259,7 +383,7 @@ function TryWord(){
                 }
             }
             console.log(lettersG,lettersO)
-            for (let i in tiles.slice(0,5)){
+            for (let i in tiles.slice(0,tilenb)){
                 let c='gray'
                 
                 if (word[i]===tiles[i].text){
@@ -288,12 +412,12 @@ function TryWord(){
                     }
                 }
                 
-                tiles[i].Flip(i%5*400,c)
+                tiles[i].Flip(i%tilenb*400,c)
                 
                 ColoredKeyBoard()
             }
 
-            tiles.splice(0,5)
+            tiles.splice(0,tilenb)
             if (word!==currentword){
                 index=0
                 try{tiles[index].querySelector('.tile').classList.add('currenttile')}catch{}
@@ -330,21 +454,12 @@ function TryWord(){
     
 }
 
-window.addEventListener('load',()=>{
-    tiles[index].querySelector('.tile').classList.add('currenttile')
-
-    for (let i in tiles){
-        tiles[i].Flip(i%5*400)
-    }
-    
-})
-
 document.addEventListener('keydown',(e)=>{
     if ('abcdefghijklmnopqrstuvwxyz'.includes(e.key)){
         AddingLetter(e.key.toUpperCase())
     }
     if (e.key==='Enter'){
-        if (index===5 && !win){
+        if (index===tilenb && !win){
             TryWord()
         }
     }
@@ -361,3 +476,37 @@ window.customElements.define("game-key",Key)
 window.customElements.define("game-keyboard",Keyboard)
 
 
+function addGrid(){
+    document.body.innerHTML='<game-grid></game-grid>'+document.body.innerHTML
+
+    tiles[index].querySelector('.tile').classList.add('currenttile')
+
+    for (let i in tiles){
+        tiles[i].Flip(i%tilenb*400)
+    }
+
+    const style = document.createElement('style')
+    const lim=62+70*(tilenb-1)+38
+    style.innerHTML = `
+    @media (width<=${lim}px) {
+        .tile{
+            width: ${62/lim*100}vw;
+        }
+        .Grid,.line{
+            gap: ${8/lim*100}vw;
+        }
+    }
+    `
+
+    document.head.appendChild(style)
+
+
+    
+    document.getElementById('btn-info').addEventListener('click',()=>{
+        if (document.getElementById('info').style.display==='none'){
+            document.getElementById('info').style.display='block'
+        }else{
+            document.getElementById('info').style.display='none'
+        }
+    })
+}
