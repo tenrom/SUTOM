@@ -32,6 +32,10 @@ function FixSeed(seed){
     rng=new Math.seedrandom(seed)
 }
 
+function getRandomInt(r,min, max) {
+    return Math.floor(r * (max - min + 1)) + min;
+}
+
 function checkWord(after){
     fetch(`https://fr.wiktionary.org/w/api.php?action=opensearch&search=${word.toLowerCase()}&format=json&origin=*&profile=classic`)
         .then((res) => res.json())
@@ -111,10 +115,9 @@ function checkWord(after){
                                 }
                                 localStorage.setItem('data',JSON.stringify(d))
                             }
-
-                            let r=rng()
-                            let i=Math.round(r*(drawWord.length-1))
-                            word=drawWord[i][Math.round(r*(drawWord[i].length-1))]
+                          
+                            let i=getRandomInt(rng(),0,drawWord.length-1)
+                            word=drawWord[i][getRandomInt(rng(),0,drawWord[i].length-1)]
                             checkWord(after)
                             return 0
                         }else{
@@ -135,10 +138,9 @@ function getWord(){
         .then((res) => res.json())
         .then((json) => {
             drawWord=json
-            
-            let r=rng()
-            let i=Math.round(r*(drawWord.length))
-            word=drawWord[i][Math.round(r*(drawWord[i].length))]
+          
+            let i=getRandomInt(rng(),0,drawWord.length-1)
+            word=drawWord[i][getRandomInt(rng(),0,drawWord[i].length-1)]
 
             checkWord(()=>{
                 tilenb=word.length
@@ -153,7 +155,7 @@ FixSeed(new Date().toDateString())
 
 if (localStorage.getItem('data')){
     if (JSON.parse(localStorage.getItem('data'))['Day']===new Date().toDateString()){
-        for (let i=0;i<Number(JSON.parse(localStorage.getItem('data'))['Num']);i++){
+        for (let i=0;i<Number(JSON.parse(localStorage.getItem('data'))['Num'])*2;i++){
             rng()
         }
     }
@@ -510,4 +512,5 @@ function addGrid(){
         }
     })
 }
+
 
