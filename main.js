@@ -137,8 +137,8 @@ function getWord(){
             drawWord=json
             
             let r=rng()
-            let i=Math.round(r*(drawWord.length-1))
-            word=drawWord[i][Math.round(r*(drawWord[i].length-1))]
+            let i=Math.round(r*(drawWord.length))
+            word=drawWord[i][Math.round(r*(drawWord[i].length))]
 
             checkWord(()=>{
                 tilenb=word.length
@@ -510,3 +510,4 @@ function addGrid(){
         }
     })
 }
+
